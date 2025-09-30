@@ -20,6 +20,10 @@ target_link_libraries(lightning_gpu_catalyst PUBLIC  lightning_compile_options
 )
 
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+# Set BUILD_RPATH to include BLAS library path if ENABLE_BLAS is ON
+if(BLAS_RUNTIME_LIB_PATH)
+    set_target_properties(lightning_gpu_catalyst PROPERTIES BUILD_RPATH "${BLAS_RUNTIME_LIB_PATH}")
+endif()
 
 if (BUILD_TESTS)
     enable_testing()

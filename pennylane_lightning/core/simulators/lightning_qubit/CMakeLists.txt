@@ -49,6 +49,8 @@ if(ENABLE_BLAS)
             list(REMOVE_DUPLICATES BLAS_LIB_PATHS)
             list(GET BLAS_LIB_PATHS 0 BLAS_LIB_PATH)
             message(STATUS "BLAS library path: ${BLAS_LIB_PATH}")
+            # Set as cache variable so it's available to catalyst subdirectories
+            set(BLAS_RUNTIME_LIB_PATH "${BLAS_LIB_PATH}" CACHE INTERNAL "BLAS library runtime path")
         endif()
         if(BLAS_LIB_NAMES)
             list(GET BLAS_LIB_NAMES 0 BLAS_LIB_NAME)
@@ -67,6 +69,8 @@ if(ENABLE_BLAS)
     target_compile_options(lightning_compile_options INTERFACE "-D_ENABLE_BLAS=1")
 else()
     message(STATUS "ENABLE_BLAS is OFF.")
+    # Set empty path when BLAS is disabled
+    set(BLAS_RUNTIME_LIB_PATH "" CACHE INTERNAL "BLAS library runtime path")
 endif()
 
 if(LQ_ENABLE_KERNEL_OMP)
