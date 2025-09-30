@@ -28,8 +28,7 @@
 
 /// @cond DEV
 namespace {
-// Declare heev function pointers to access corresponding functions in
-// OpenBLAS
+// Declare heev function pointers to access corresponding functions in LAPACK
 using zheevPtr = void (*)(const char *, const char *, const int *,
                           std::complex<double> *, const int *, double *,
                           std::complex<double> *, const int *, double *, int *);
@@ -82,7 +81,7 @@ void compute_diagonalizing_gates(int n, int lda,
     int info;
 
     if constexpr (std::is_same<T, float>::value) {
-        auto cheev = blasLibLoader->getSymbol<cheevPtr>("scipy_cheev_");
+        auto cheev = blasLibLoader->getSymbol<cheevPtr>("cheev_");
         // Query optimal workspace size
         cheev(&jobz, &uplo, &n, ah.data(), &lda, eigenVals.data(),
               work_query.data(), &lwork, rwork.data(), &info);
@@ -93,7 +92,7 @@ void compute_diagonalizing_gates(int n, int lda,
         cheev(&jobz, &uplo, &n, ah.data(), &lda, eigenVals.data(),
               work_optimal.data(), &lwork, rwork.data(), &info);
     } else {
-        auto zheev = blasLibLoader->getSymbol<zheevPtr>("scipy_zheev_");
+        auto zheev = blasLibLoader->getSymbol<zheevPtr>("zheev_");
         // Query optimal workspace size
         zheev(&jobz, &uplo, &n, ah.data(), &lda, eigenVals.data(),
               work_query.data(), &lwork, rwork.data(), &info);
