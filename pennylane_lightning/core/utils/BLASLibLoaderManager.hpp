@@ -23,12 +23,6 @@
 #include <memory>
 #include <string>
 
-/// @cond DEV
-#ifndef SCIPY_OPENBLAS32_LIB
-#define SCIPY_OPENBLAS32_LIB ""
-#endif
-/// @endcond
-
 #include "SharedLibLoader.hpp"
 
 namespace Pennylane::Util {
@@ -36,17 +30,16 @@ namespace Pennylane::Util {
  * @brief BLAS Lib dynamic loader manager.
  *
  * This class is a singleton that manages the dynamic loading of BLAS libraries.
- * It will search for the BLAS libraries in the given path, or in the RPATH
- * - The path provided by the SCIPY_OPENBLAS32_LIB macro.
+ * It will search for the BLAS libraries in the RPATH or system library paths.
  */
 class BLASLibLoaderManager final {
   private:
 #ifdef __APPLE__
-    const std::string blas_lib_name_ = "libscipy_openblas.dylib";
+    const std::string blas_lib_name_ = "libblas.dylib";
 #elif defined(_MSC_VER)
-    const std::string blas_lib_name_ = "libscipy_openblas.dll";
+    const std::string blas_lib_name_ = "blas.dll";
 #else
-    const std::string blas_lib_name_ = "libscipy_openblas.so";
+    const std::string blas_lib_name_ = "libblas.so";
 #endif
 
     std::shared_ptr<SharedLibLoader> blasLib_;
@@ -55,18 +48,8 @@ class BLASLibLoaderManager final {
      * @brief BLASLibLoaderManager.
      */
     explicit BLASLibLoaderManager() {
-        std::string libPathStr;
-        if (std::filesystem::exists(SCIPY_OPENBLAS32_LIB)) {
-            std::filesystem::path scipyLibsPath(SCIPY_OPENBLAS32_LIB);
-            auto libPath = scipyLibsPath / blas_lib_name_.c_str();
-            libPathStr = libPath.string(); // For static lib search
-        } else {
-            // LCOV_EXCL_START
-            libPathStr = blas_lib_name_; // For RPATH search from shared lib
-            // LCOV_EXCL_STOP
-        }
-
-        blasLib_ = std::make_shared<SharedLibLoader>(libPathStr);
+        // Try to load BLAS library from system paths or RPATH
+        blasLib_ = std::make_shared<SharedLibLoader>(blas_lib_name_);
     }
 
   public:
