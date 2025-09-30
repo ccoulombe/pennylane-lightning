@@ -126,7 +126,6 @@ if __name__ == "__main__":
 
     dependencies = [
         "pennylane>=0.41",
-        "scipy-openblas32>=0.3.26",
     ]
 
     if backend == "lightning_gpu":
