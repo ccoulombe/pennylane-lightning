@@ -23,6 +23,15 @@
 #include <memory>
 #include <string>
 
+/// @cond DEV
+#ifndef BLAS_LIB_PATH
+#define BLAS_LIB_PATH ""
+#endif
+#ifndef BLAS_LIB_NAME
+#define BLAS_LIB_NAME ""
+#endif
+/// @endcond
+
 #include "SharedLibLoader.hpp"
 
 namespace Pennylane::Util {
@@ -30,26 +39,69 @@ namespace Pennylane::Util {
  * @brief BLAS Lib dynamic loader manager.
  *
  * This class is a singleton that manages the dynamic loading of BLAS libraries.
- * It will search for the BLAS libraries in the RPATH or system library paths.
+ * It will search for the BLAS libraries using the path and name provided by CMake
+ * via BLAS_LIB_PATH and BLAS_LIB_NAME macros, or fall back to system paths/RPATH.
  */
 class BLASLibLoaderManager final {
   private:
-#ifdef __APPLE__
-    const std::string blas_lib_name_ = "libblas.dylib";
-#elif defined(_MSC_VER)
-    const std::string blas_lib_name_ = "blas.dll";
-#else
-    const std::string blas_lib_name_ = "libblas.so";
-#endif
-
     std::shared_ptr<SharedLibLoader> blasLib_;
 
     /**
      * @brief BLASLibLoaderManager.
      */
     explicit BLASLibLoaderManager() {
-        // Try to load BLAS library from system paths or RPATH
-        blasLib_ = std::make_shared<SharedLibLoader>(blas_lib_name_);
+        std::string libPathStr;
+        
+        // Try to use the library path and name provided by CMake
+        std::string blasLibPath(BLAS_LIB_PATH);
+        std::string blasLibName(BLAS_LIB_NAME);
+        
+        if (!blasLibPath.empty() && !blasLibName.empty() && 
+            std::filesystem::exists(blasLibPath)) {
+            // Construct full path to library
+            std::filesystem::path libPath(blasLibPath);
+            
+#ifdef __APPLE__
+            std::string libFile = blasLibName + ".dylib";
+#elif defined(_MSC_VER)
+            std::string libFile = blasLibName + ".dll";
+#else
+            std::string libFile = blasLibName + ".so";
+#endif
+            auto fullPath = libPath / libFile;
+            if (std::filesystem::exists(fullPath)) {
+                libPathStr = fullPath.string();
+            } else {
+                // Try with lib prefix
+                std::string libFileWithPrefix = "lib" + blasLibName.substr(blasLibName.find("lib") == 0 ? 3 : 0);
+                fullPath = libPath / (libFileWithPrefix + 
+#ifdef __APPLE__
+                    ".dylib"
+#elif defined(_MSC_VER)
+                    ".dll"
+#else
+                    ".so"
+#endif
+                );
+                if (std::filesystem::exists(fullPath)) {
+                    libPathStr = fullPath.string();
+                } else {
+                    // Fall back to just the library name for RPATH search
+                    libPathStr = blasLibName;
+                }
+            }
+        } else {
+            // Fall back to generic BLAS library name for system search
+#ifdef __APPLE__
+            libPathStr = "libblas.dylib";
+#elif defined(_MSC_VER)
+            libPathStr = "blas.dll";
+#else
+            libPathStr = "libblas.so";
+#endif
+        }
+
+        blasLib_ = std::make_shared<SharedLibLoader>(libPathStr);
     }
 
   public:
