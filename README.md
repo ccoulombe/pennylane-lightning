@@ -174,5 +174,4 @@ PennyLane Lightning makes use of the following libraries and tools, which are un
 - **nanobind:** https://github.com/wjakob/nanobind
 - **Kokkos Core:** https://github.com/kokkos/kokkos
 - **NVIDIA cuQuantum:** https://developer.nvidia.com/cuquantum-sdk
-- **scipy-openblas32:** https://pypi.org/project/scipy-openblas32/
 - **Xanadu JET:** https://github.com/XanaduAI/jet

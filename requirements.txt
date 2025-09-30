@@ -1,6 +1,5 @@
 # Build Dependencies
 ninja
-scipy-openblas32>=0.3.26
 
 # Testing Dependencies
 pytest>=8.4.1

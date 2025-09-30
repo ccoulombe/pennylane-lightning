@@ -47,7 +47,10 @@ target_link_libraries(lightning_kokkos_catalyst PUBLIC  lightning_compile_option
 )
 
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
-set_target_properties(lightning_kokkos_catalyst PROPERTIES BUILD_RPATH "${SCIPY_OPENBLAS32_RUNTIME_LIB_PATH}")
+# Set BUILD_RPATH to include BLAS library path if ENABLE_BLAS is ON
+if(BLAS_RUNTIME_LIB_PATH)
+    set_target_properties(lightning_kokkos_catalyst PROPERTIES BUILD_RPATH "${BLAS_RUNTIME_LIB_PATH}")
+endif()
 
 if (BUILD_TESTS)
     enable_testing()
